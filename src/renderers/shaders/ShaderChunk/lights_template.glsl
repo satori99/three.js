@@ -73,7 +73,7 @@ IncidentLight directLight;
 
 		#ifdef USE_SHADOWMAP
 		// directLight.color *= all( bvec2( directionalLight.shadow, directLight.visible ) ) ? getShadow( directionalShadowMap[ i ], directionalLight.shadowMapSize, directionalLight.shadowBias, directionalLight.shadowRadius, vDirectionalShadowCoord[ i ] ) : 1.0;
-		directLight.color *= vec3( 1.0, 0.0, 0.0 );
+		directLight.color *= 0.0;
 		#endif
 
 		RE_Direct( directLight, geometry, material, reflectedLight );
