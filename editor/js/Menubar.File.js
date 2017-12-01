@@ -14,6 +14,8 @@ Menubar.File = function ( editor ) {
 
 	//
 
+	var config = editor.config;
+
 	var container = new UI.Panel();
 	container.setClass( 'menu' );
 
@@ -48,13 +50,19 @@ Menubar.File = function ( editor ) {
 
 	// Import
 
+	var form = document.createElement( 'form' );
+	form.style.display = 'none';
+	document.body.appendChild( form );
+
 	var fileInput = document.createElement( 'input' );
 	fileInput.type = 'file';
 	fileInput.addEventListener( 'change', function ( event ) {
 
 		editor.loader.loadFile( fileInput.files[ 0 ] );
+		form.reset();
 
 	} );
+	form.appendChild( fileInput );
 
 	var option = new UI.Row();
 	option.setClass( 'option' );
@@ -260,14 +268,18 @@ Menubar.File = function ( editor ) {
 
 		//
 
+		var title = config.getKey( 'project/title' );
+
 		var manager = new THREE.LoadingManager( function () {
 
-			save( zip.generate( { type: 'blob' } ), 'download.zip' );
+			save( zip.generate( { type: 'blob' } ), ( title !== '' ? title : 'untitled' ) + '.zip' );
 
 		} );
 
 		var loader = new THREE.FileLoader( manager );
 		loader.load( 'js/libs/app/index.html', function ( content ) {
+
+			content = content.replace( '<!-- title -->', title );
 
 			var includes = [];
 
@@ -278,6 +290,23 @@ Menubar.File = function ( editor ) {
 			}
 
 			content = content.replace( '<!-- includes -->', includes.join( '\n\t\t' ) );
+
+			var editButton = '';
+
+			if ( config.getKey( 'project/editable' ) ) {
+
+				editButton = `
+			var button = document.createElement( 'a' );
+			button.href = 'https://threejs.org/editor/#file=' + location.href.split( '/' ).slice( 0, - 1 ).join( '/' ) + '/app.json';
+			button.style.cssText = 'position: absolute; bottom: 20px; right: 20px; padding: 12px 14px; color: #fff; border: 1px solid #fff; border-radius: 4px; text-decoration: none;';
+			button.target = '_blank';
+			button.textContent = 'EDIT';
+			document.body.appendChild( button );
+				`;
+
+			}
+
+			content = content.replace( '/* edit button */', editButton );
 
 			zip.file( 'index.html', content );
 
